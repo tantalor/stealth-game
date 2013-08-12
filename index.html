@@ -3,16 +3,18 @@
 <head>
   <title>Stealth Game</title>
   <script src="index.js" type="text/javascript" charset="utf-8"></script>
+  <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+  <style type="text/css" media="screen">
+    body {margin: 0;}
+    canvas {margin: 0 auto; display: block; outline: solid 1px black}
+  </style>
 </head>
 <body>
-  <h1>Stealth Game</h1>
-  <div>
-    <canvas id="game"></canvas>
-    <script type="text/javascript" charset="utf-8">
-      var game = document.getElementById('game');
-      var stealthGame = new StealthGame(game);
-      console.log(stealthGame);
-    </script>>
-  </div>
+  <canvas id="game"></canvas>
+  <script type="text/javascript" charset="utf-8">
+    var game = document.getElementById('game');
+    var stealthGame = new StealthGame(game);
+    console.log(stealthGame);
+  </script>
 </body>
 </html>
