@@ -1,1 +1,3 @@
-console.log("hello world");
+function StealthGame(gameDiv) {
+  this.gameDiv_ = gameDiv;
+};

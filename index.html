@@ -7,7 +7,12 @@
 <body>
   <h1>Stealth Game</h1>
   <div>
-    <canvas></canvas>
+    <canvas id="game"></canvas>
+    <script type="text/javascript" charset="utf-8">
+      var game = document.getElementById('game');
+      var stealthGame = new StealthGame(game);
+      console.log(stealthGame);
+    </script>>
   </div>
 </body>
 </html>
