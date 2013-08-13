@@ -19,20 +19,23 @@ StealthGame = function(canvas) {
   this.agent_ = new StealthGame.Agent(0, 0);
   
   startFrames(this);
+  this.interval_ = setUpdateStateInterval(this, 60);
 };
 
 
-StealthGame.prototype.drawFrame = function(t) {
-  this.context_.clearRect(0, 0, this.width_, this.height_);
+StealthGame.prototype.updateState = function(t) {
+  var x = Math.sin(t / 1000);
+  var y = Math.cos(t / 1000);
+  this.agent_.moveTo(x, y);
+};
 
-  // Model coordinates
-  var x = Math.sin(t / 2000);
-  var y = Math.cos(t / 2000);
+
+StealthGame.prototype.drawFrame = function() {
+  this.context_.clearRect(0, 0, this.width_, this.height_);
 
   this.context_.save();
   this.context_.translate(this.width_ / 2, this.height_ / 2);
   this.context_.scale(this.scale_, -this.scale_);
-  this.agent_.moveTo(x, y);
   this.agent_.drawFrame(this.context_);
   this.context_.restore();
 };
@@ -69,8 +72,18 @@ function startFrames(obj) {
   runFrame();
 }
 
+function setUpdateStateInterval(obj, fps) {
+  var t0 = new Date().getTime();
+  function updateState() {
+    var t = new Date().getTime();
+    obj.updateState(t - t0);
+  }
+  return setInterval(updateState, 1000 / fps);
+}
+
 if (this.wtf) {
   StealthGame = wtf.trace.instrumentType(StealthGame, 'StealthGame', {
-    drawFrame: 'drawFrame'
+    drawFrame: 'drawFrame',
+    updateState: 'updateState'
   });
 }
