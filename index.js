@@ -14,13 +14,15 @@ StealthGame = function(canvas) {
   
   this.context_ = this.canvas_.getContext('2d');
   
+  this.agent_ = new StealthGame.Agent(0, 0);
+  
   startFrames(this);
 };
 
 
 StealthGame.prototype.drawFrame = function(t) {
   this.context_.clearRect(0, 0, this.width_, this.height_);
-  
+
   // Model coordinates
   var x = Math.sin(t / 1000);
   var y = Math.cos(t / 1000);
@@ -30,13 +32,30 @@ StealthGame.prototype.drawFrame = function(t) {
   var cy = this.height_ / 2;
   var r = Math.min(cx, cy);
   var dx = x * r, dy = -y * r;
-  
-  this.context_.strokeStyle = 'black';
-  this.context_.lineWidth = 3;
-  this.context_.beginPath();
-  this.context_.moveTo(cx - dx, cy - dy);
-  this.context_.lineTo(cx + dx, cy + dy);
-  this.context_.stroke();
+
+  this.context_.save();
+  this.context_.translate(this.width_ / 2, this.height_ / 2);
+  this.agent_.x = dx;
+  this.agent_.y = dy;
+  this.agent_.drawFrame(this.context_);
+  this.context_.restore();
+};
+
+
+StealthGame.Agent = function(x, y) {
+  this.x = x;
+  this.y = y;
+  this.r = 10;
+};
+
+
+StealthGame.Agent.prototype.drawFrame = function(context) {
+  context.beginPath();
+  context.arc(this.x, this.y, this.r, 0, 6.284);
+  context.fillStyle = 'blue';
+  context.fill();
+  context.strokeStyle = 'black';
+  context.stroke();
 };
 
 
