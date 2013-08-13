@@ -1,4 +1,4 @@
-function StealthGame(canvas) {
+StealthGame = function(canvas) {
   this.canvas_ = canvas;
   
   var clientWidth = document.documentElement.clientWidth;
@@ -15,7 +15,8 @@ function StealthGame(canvas) {
   this.context_ = this.canvas_.getContext('2d');
   
   startFrames(this);
-}
+};
+
 
 StealthGame.prototype.drawFrame = function(t) {
   this.context_.clearRect(0, 0, this.width_, this.height_);
