@@ -31,8 +31,8 @@ StealthGame.prototype.drawFrame = function(t) {
 
   this.context_.save();
   this.context_.translate(this.width_ / 2, this.height_ / 2);
-  this.context_.scale(this.scale_, this.scale_);
-  this.agent_.moveTo(x, -y);
+  this.context_.scale(this.scale_, -this.scale_);
+  this.agent_.moveTo(x, y);
   this.agent_.drawFrame(this.context_);
   this.context_.restore();
 };
