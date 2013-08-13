@@ -18,12 +18,18 @@ StealthGame = function(canvas) {
   
   this.agent_ = new StealthGame.Agent(0, 0);
   
-  startFrames(this);
-  this.interval_ = setUpdateStateInterval(this, 60);
+  this.boundDrawFrame_ = this.drawFrame.bind(this);
+  window.requestAnimationFrame(this.boundDrawFrame_);
+  
+  this.t0_ = new Date().getTime();
+  var fps = 60;
+  this.interval_ = setInterval(this.updateState.bind(this), 1000 / fps);
 };
 
 
-StealthGame.prototype.updateState = function(t) {
+StealthGame.prototype.updateState = function() {
+  var t1 = new Date().getTime();
+  var t = t1 - this.t0_;
   var x = Math.sin(t / 1000);
   var y = Math.cos(t / 1000);
   this.agent_.moveTo(x, y);
@@ -38,6 +44,8 @@ StealthGame.prototype.drawFrame = function() {
   this.context_.scale(this.scale_, -this.scale_);
   this.agent_.drawFrame(this.context_);
   this.context_.restore();
+  
+  window.requestAnimationFrame(this.boundDrawFrame_);
 };
 
 
@@ -63,23 +71,6 @@ StealthGame.Agent.prototype.drawFrame = function(context) {
   context.stroke();
 };
 
-
-function startFrames(obj) {
-  var runFrame = function(t) {
-    obj.drawFrame(t);
-    window.requestAnimationFrame(runFrame);
-  };
-  runFrame();
-}
-
-function setUpdateStateInterval(obj, fps) {
-  var t0 = new Date().getTime();
-  function updateState() {
-    var t = new Date().getTime();
-    obj.updateState(t - t0);
-  }
-  return setInterval(updateState, 1000 / fps);
-}
 
 if (this.wtf) {
   StealthGame = wtf.trace.instrumentType(StealthGame, 'StealthGame', {
