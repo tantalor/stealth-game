@@ -24,8 +24,8 @@ StealthGame.prototype.drawFrame = function(t) {
   this.context_.clearRect(0, 0, this.width_, this.height_);
 
   // Model coordinates
-  var x = Math.sin(t / 1000);
-  var y = Math.cos(t / 1000);
+  var x = Math.sin(t / 2000);
+  var y = Math.cos(t / 2000);
   
   // Screen coordinates.
   var cx = this.width_ / 2;
@@ -35,8 +35,7 @@ StealthGame.prototype.drawFrame = function(t) {
 
   this.context_.save();
   this.context_.translate(this.width_ / 2, this.height_ / 2);
-  this.agent_.x = dx;
-  this.agent_.y = dy;
+  this.agent_.moveTo(dx, dy);
   this.agent_.drawFrame(this.context_);
   this.context_.restore();
 };
@@ -49,11 +48,17 @@ StealthGame.Agent = function(x, y) {
 };
 
 
+StealthGame.Agent.prototype.moveTo = function (x, y) {
+  this.x = x;
+  this.y = y;
+}
+
 StealthGame.Agent.prototype.drawFrame = function(context) {
   context.beginPath();
   context.arc(this.x, this.y, this.r, 0, 6.284);
-  context.fillStyle = 'blue';
+  context.fillStyle = '#aaf';
   context.fill();
+  context.lineWidth = 1;
   context.strokeStyle = 'black';
   context.stroke();
 };
