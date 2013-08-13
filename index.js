@@ -46,3 +46,9 @@ function startFrames(obj) {
   };
   runFrame();
 }
+
+if (this.wtf) {
+  StealthGame = wtf.trace.instrumentType(StealthGame, 'StealthGame', {
+    drawFrame: 'drawFrame'
+  });
+}
