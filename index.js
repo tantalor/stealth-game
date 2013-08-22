@@ -22,17 +22,11 @@ StealthGame = function(canvas) {
   this.eventHandler_ = new StealthGame.EventHandler(
       this.agent_, this.screen_);
   
-  var events = ['mousedown', 'mouseup', 'mousemove'];
+  var events = ['mousedown', 'mouseup', 'mousemove', 'touchmove', 'touchstart'];
   for (var i = 0; i < events.length; i++) {
-  this.canvas_.addEventListener(events[i],
-      this.eventHandler_.getHandler(events[i]));
+    window.addEventListener(events[i],
+        this.eventHandler_.getHandler(events[i]));
   }
-     
-  // el.addEventListener("touchstart", handl eStart, false);
-  //   el.addEventListener("touchend", handleEnd, false);
-  //   el.addEventListener("touchcancel", handleCancel, false);
-  //   el.addEventListener("touchleave", handleEnd, false);
-  //   el.addEventListener("touchmove", handleMove, false);
 };
 
 StealthGame.Screen = function(clientWidth, clientHeight) {
@@ -122,6 +116,19 @@ StealthGame.EventHandler.prototype.onmousemove = function(evt) {
   if (!this.mouseDown_) return;
   this.screen_.toM(evt.offsetX, evt.offsetY, this.dstPair_);
   this.agent_.moveTo(this.dstPair_[0], this.dstPair_[1]);
+};
+
+StealthGame.EventHandler.prototype.ontouchmove = function(evt) {
+  if (navigator.userAgent.indexOf("Android") >= 0)
+    evt.preventDefault();
+  
+  var touch = evt.touches[evt.touches.length - 1];
+  this.screen_.toM(touch.screenX, touch.screenY, this.dstPair_);
+  this.agent_.moveTo(this.dstPair_[0], this.dstPair_[1]);
+};
+
+StealthGame.EventHandler.prototype.ontouchstart = function(evt) {
+  this.ontouchmove(evt);
 };
 
 
