@@ -97,6 +97,7 @@ StealthGame.EventHandler = function(agent, screen) {
   this.screen_ = screen;
   this.dstPair_ = [0, 0];
   this.mouseDown_ = false;
+  this.isAndroid_ = navigator.userAgent.indexOf("Android") >= 0;
 };
 
 StealthGame.EventHandler.prototype.getHandler = function(name) {
@@ -119,8 +120,7 @@ StealthGame.EventHandler.prototype.onmousemove = function(evt) {
 };
 
 StealthGame.EventHandler.prototype.ontouchmove = function(evt) {
-  if (navigator.userAgent.indexOf("Android") >= 0)
-    evt.preventDefault();
+  if (this.isAndroid_) evt.preventDefault();
   
   var touch = evt.touches[evt.touches.length - 1];
   this.screen_.toM(touch.screenX, touch.screenY, this.dstPair_);
