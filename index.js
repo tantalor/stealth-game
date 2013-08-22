@@ -22,14 +22,17 @@ StealthGame = function(canvas) {
   this.eventHandler_ = new StealthGame.EventHandler(
       this.agent_, this.screen_);
   
-  this.canvas_.addEventListener('mousedown',
-      this.eventHandler_.onmousedown.bind(this.eventHandler_));
-  
-  this.canvas_.addEventListener('mouseup',
-      this.eventHandler_.onmouseup.bind(this.eventHandler_));
-  
-  this.canvas_.addEventListener('mousemove',
-      this.eventHandler_.onmousemove.bind(this.eventHandler_));
+  var events = ['mousedown', 'mouseup', 'mousemove'];
+  for (var i = 0; i < events.length; i++) {
+  this.canvas_.addEventListener(events[i],
+      this.eventHandler_.getHandler(events[i]));
+  }
+     
+  // el.addEventListener("touchstart", handl eStart, false);
+  //   el.addEventListener("touchend", handleEnd, false);
+  //   el.addEventListener("touchcancel", handleCancel, false);
+  //   el.addEventListener("touchleave", handleEnd, false);
+  //   el.addEventListener("touchmove", handleMove, false);
 };
 
 StealthGame.Screen = function(clientWidth, clientHeight) {
@@ -100,6 +103,10 @@ StealthGame.EventHandler = function(agent, screen) {
   this.screen_ = screen;
   this.dstPair_ = [0, 0];
   this.mouseDown_ = false;
+};
+
+StealthGame.EventHandler.prototype.getHandler = function(name) {
+  return this['on' + name].bind(this);
 };
 
 StealthGame.EventHandler.prototype.onmouseup = function(evt) {
