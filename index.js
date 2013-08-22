@@ -1,20 +1,14 @@
 StealthGame = function(canvas) {
+  this.screen_ = new StealthGame.Screen(
+      document.documentElement.clientWidth,
+      document.documentElement.clientHeight);
+  
   this.canvas_ = canvas;
-  
-  var clientWidth = document.documentElement.clientWidth;
-  var clientHeight = document.documentElement.clientHeight;
-  
-  var maxWidth = 1024;
-  var maxHeight = maxWidth * 3 / 4;
-  
-  this.width_ = this.canvas_.width = Math.min(clientWidth, maxWidth);
-  this.height_ = this.canvas_.height = Math.min(clientHeight, maxHeight);
-  
-  this.canvas_.style.marginTop = (clientHeight - this.height_) / 2 + 'px';
+  this.canvas_.width = this.screen_.width;
+  this.canvas_.height = this.screen_.height;
+  this.canvas_.style.marginTop = this.screen_.marginTop;
   
   this.context_ = this.canvas_.getContext('2d');
-  
-  this.scale_ = Math.min(this.width_ / 2, this.height_ / 2);
   
   this.agent_ = new StealthGame.Agent(0, 0);
   
@@ -24,24 +18,54 @@ StealthGame = function(canvas) {
   this.t0_ = new Date().getTime();
   var fps = 60;
   this.interval_ = setInterval(this.updateState.bind(this), 1000 / fps);
+  
+  this.eventHandler_ = new StealthGame.EventHandler(
+      this.agent_, this.screen_);
+  
+  this.canvas_.addEventListener('mousedown',
+      this.eventHandler_.onmousedown.bind(this.eventHandler_));
+  
+  this.canvas_.addEventListener('mouseup',
+      this.eventHandler_.onmouseup.bind(this.eventHandler_));
+  
+  this.canvas_.addEventListener('mousemove',
+      this.eventHandler_.onmousemove.bind(this.eventHandler_));
 };
 
-
-StealthGame.prototype.updateState = function() {
-  var t1 = new Date().getTime();
-  var t = t1 - this.t0_;
-  var x = Math.sin(t / 1000);
-  var y = Math.cos(t / 1000);
-  this.agent_.moveTo(x, y);
+StealthGame.Screen = function(clientWidth, clientHeight) {
+  var maxWidth = 1024;
+  var maxHeight = maxWidth * 3 / 4;
+  
+  this.width = Math.min(clientWidth, maxWidth);
+  this.height = Math.min(clientHeight, maxHeight);
+  
+  this.marginTop = (clientHeight - this.height) / 2 + 'px';
+  
+  this.top = -1;
+  this.right = 1;
+  this.bottom = 1;
+  this.left = -1;
+  
+  this.offsetX = this.width / (this.right - this.left);
+  this.offsetY = this.height / (this.bottom - this.top);
+  
+  this.scale = Math.min(this.offsetX, this.offsetY);
 };
+
+StealthGame.Screen.prototype.toM = function(x, y, dstPair) {
+  dstPair[0] = (x - this.offsetX) / this.scale;
+  dstPair[1] = (this.offsetY - y) / this.scale;
+};
+
+StealthGame.prototype.updateState = function() {};
 
 
 StealthGame.prototype.drawFrame = function() {
-  this.context_.clearRect(0, 0, this.width_, this.height_);
+  this.context_.clearRect(0, 0, this.screen_.width, this.screen_.height);
 
   this.context_.save();
-  this.context_.translate(this.width_ / 2, this.height_ / 2);
-  this.context_.scale(this.scale_, -this.scale_);
+  this.context_.translate(this.screen_.width / 2, this.screen_.height / 2);
+  this.context_.scale(this.screen_.scale, -this.screen_.scale);
   this.agent_.drawFrame(this.context_);
   this.context_.restore();
   
@@ -69,6 +93,28 @@ StealthGame.Agent.prototype.drawFrame = function(context) {
   context.lineWidth = this.r / 8;
   context.strokeStyle = 'black';
   context.stroke();
+};
+
+StealthGame.EventHandler = function(agent, screen) {
+  this.agent_ = agent;
+  this.screen_ = screen;
+  this.dstPair_ = [0, 0];
+  this.mouseDown_ = false;
+};
+
+StealthGame.EventHandler.prototype.onmouseup = function(evt) {
+  this.mouseDown_ = false;
+};
+
+StealthGame.EventHandler.prototype.onmousedown = function(evt) {
+  this.mouseDown_ = true;
+  this.onmousemove(evt);
+};
+
+StealthGame.EventHandler.prototype.onmousemove = function(evt) {
+  if (!this.mouseDown_) return;
+  this.screen_.toM(evt.offsetX, evt.offsetY, this.dstPair_);
+  this.agent_.moveTo(this.dstPair_[0], this.dstPair_[1]);
 };
 
 
