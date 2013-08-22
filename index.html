@@ -12,9 +12,7 @@
 <body>
   <canvas id="game"></canvas>
   <script type="text/javascript" charset="utf-8">
-    var game = document.getElementById('game');
-    var stealthGame = new StealthGame(game);
-    console.log(stealthGame);
+    window.game = new StealthGame(document.getElementById('game'));
   </script>
 </body>
 </html>
