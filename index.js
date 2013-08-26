@@ -51,9 +51,12 @@ StealthGame.Screen = function(clientWidth, clientHeight) {
   this.scale = Math.min(this.offsetX, this.offsetY);
 };
 
-StealthGame.Screen.prototype.toM = function(x, y, dstPair) {
-  dstPair[0] = (x - this.offsetX) / this.scale;
-  dstPair[1] = (this.offsetY - y) / this.scale;
+StealthGame.Screen.prototype.toMx = function(x) {
+  return (x - this.offsetX) / this.scale;
+};
+
+StealthGame.Screen.prototype.toMy = function(y) {
+  return (this.offsetY - y) / this.scale;
 };
 
 StealthGame.prototype.updateState = function() {};
@@ -97,7 +100,6 @@ StealthGame.Agent.prototype.drawFrame = function(context) {
 StealthGame.EventHandler = function(agent, screen) {
   this.agent_ = agent;
   this.screen_ = screen;
-  this.dstPair_ = [0, 0];
   this.mouseDown_ = false;
   this.isAndroid_ = navigator.userAgent.indexOf("Android") >= 0;
 };
@@ -117,19 +119,18 @@ StealthGame.EventHandler.prototype.onmousedown = function(evt) {
 
 StealthGame.EventHandler.prototype.onmousemove = function(evt) {
   if (!this.mouseDown_) return;
-  this.screen_.toM(evt.offsetX, evt.offsetY, this.dstPair_);
-  this.agent_.moveTo(this.dstPair_[0], this.dstPair_[1]);
+  this.agent_.moveTo(
+      this.screen_.toMx(evt.offsetX),
+      this.screen_.toMy(evt.offsetY));
 };
 
 StealthGame.EventHandler.prototype.ontouchmove = function(evt) {
   if (this.isAndroid_) evt.preventDefault();
   
   var touch = evt.touches[evt.touches.length - 1];
-  this.screen_.toM(
-      touch.screenX - this.screen_.screenLeft,
-      touch.screenY - this.screen_.screenTop,
-      this.dstPair_);
-  this.agent_.moveTo(this.dstPair_[0], this.dstPair_[1]);
+  this.agent_.moveTo(
+      this.screen_.toMx(touch.screenX - this.screen_.screenLeft),
+      this.screen_.toMy(touch.screenY - this.screen_.screenTop));
 };
 
 StealthGame.EventHandler.prototype.ontouchstart = function(evt) {
