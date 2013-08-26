@@ -6,7 +6,8 @@ StealthGame = function(canvas) {
   this.canvas_ = canvas;
   this.canvas_.width = this.screen_.width;
   this.canvas_.height = this.screen_.height;
-  this.canvas_.style.marginTop = this.screen_.marginTop;
+  this.canvas_.style.left = this.screen_.screenLeft + 'px';
+  this.canvas_.style.top = this.screen_.screenTop + 'px';
   
   this.context_ = this.canvas_.getContext('2d');
   
@@ -24,7 +25,7 @@ StealthGame = function(canvas) {
   
   var events = ['mousedown', 'mouseup', 'mousemove', 'touchmove', 'touchstart'];
   for (var i = 0; i < events.length; i++) {
-    window.addEventListener(events[i],
+    this.canvas_.addEventListener(events[i],
         this.eventHandler_.getHandler(events[i]));
   }
 };
@@ -36,7 +37,8 @@ StealthGame.Screen = function(clientWidth, clientHeight) {
   this.width = Math.min(clientWidth, maxWidth);
   this.height = Math.min(clientHeight, maxHeight);
   
-  this.marginTop = (clientHeight - this.height) / 2 + 'px';
+  this.screenTop = (clientHeight - this.height) / 2;
+  this.screenLeft = (clientWidth - this.width) / 2;
   
   this.top = -1;
   this.right = 1;
@@ -123,7 +125,10 @@ StealthGame.EventHandler.prototype.ontouchmove = function(evt) {
   if (this.isAndroid_) evt.preventDefault();
   
   var touch = evt.touches[evt.touches.length - 1];
-  this.screen_.toM(touch.screenX, touch.screenY, this.dstPair_);
+  this.screen_.toM(
+      touch.screenX - this.screen_.screenLeft,
+      touch.screenY - this.screen_.screenTop,
+      this.dstPair_);
   this.agent_.moveTo(this.dstPair_[0], this.dstPair_[1]);
 };
 
