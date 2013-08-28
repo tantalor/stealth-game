@@ -158,10 +158,8 @@ StealthGame.EventHandler.prototype.ontouchmove = function(evt) {
   
   var touch = evt.touches[evt.touches.length - 1];
   this.agent_.moveTo(
-      this.camera_.screenToWorldX(
-        this.screen_.clientToScreenX(touch.screenX)),
-      this.camera_.screenToWorldY(
-        this.screen_.clientToScreenY(touch.screenY)));
+      this.camera_.clientToWorldX(touch.screenX),
+      this.camera_.clientToWorldY(touch.screenY));
 };
 
 StealthGame.EventHandler.prototype.ontouchstart = function(evt) {
