@@ -2,12 +2,14 @@ StealthGame = function(canvas) {
   this.screen_ = new StealthGame.Screen(
       document.documentElement.clientWidth,
       document.documentElement.clientHeight);
+      
+  this.camera_ = new StealthGame.Camera(this.screen_);
   
   this.canvas_ = canvas;
   this.canvas_.width = this.screen_.width;
   this.canvas_.height = this.screen_.height;
-  this.canvas_.style.left = this.screen_.screenLeft + 'px';
-  this.canvas_.style.top = this.screen_.screenTop + 'px';
+  this.canvas_.style.left = this.screen_.left + 'px';
+  this.canvas_.style.top = this.screen_.top + 'px';
   
   this.context_ = this.canvas_.getContext('2d');
   
@@ -21,7 +23,7 @@ StealthGame = function(canvas) {
   this.interval_ = setInterval(this.updateState.bind(this), 1000 / fps);
   
   this.eventHandler_ = new StealthGame.EventHandler(
-      this.agent_, this.screen_);
+      this.agent_, this.camera_);
   
   var events = ['mousedown', 'mouseup', 'mousemove', 'touchmove', 'touchstart'];
   for (var i = 0; i < events.length; i++) {
@@ -30,33 +32,61 @@ StealthGame = function(canvas) {
   }
 };
 
+StealthGame.Camera = function(screen) {
+  var widthToHeight = screen.width / screen.height;
+  var widthScale = widthToHeight < 0 ? 1 : widthToHeight;
+  var heightScale = widthToHeight > 0 ? 1 : 1 / widthToHeight;
+  
+  // World coordinates.
+  this.width_ = 2 * widthScale;
+  this.height_ = 2 * heightScale;
+  this.x_ = -this.width_ / 2;
+  this.y_ = -this.height_ / 2;
+  
+  this.screen_ = screen;
+}
+
+StealthGame.Camera.prototype.screenToWorldX = function(x) {
+  return (x / this.screen_.width) * this.width_ + this.x_;
+};
+
+StealthGame.Camera.prototype.screenToWorldY = function(y) {
+  return (1 - y / this.screen_.height) * this.height_ + this.y_;
+};
+
+StealthGame.Camera.prototype.clientToWorldX = function(x) {
+  return this.screenToWorldX(this.screen_.clientToScreenX(x));
+};
+
+StealthGame.Camera.prototype.clientToWorldY = function(y) {
+  return this.screenToWorldY(this.screen_.clientToScreenY(y));
+};
+
+StealthGame.Camera.prototype.transform = function(context) {
+  var scaleX = this.screen_.width / this.width_;
+  var scaleY = this.screen_.height / this.height_;
+  context.translate(0, this.screen_.height);
+  context.scale(scaleX, -scaleY);
+  context.translate(-this.x_, -this.y_);
+};
+
 StealthGame.Screen = function(clientWidth, clientHeight) {
   var maxWidth = 1024;
   var maxHeight = maxWidth * 3 / 4;
   
+  // Client coordinates.
   this.width = Math.min(clientWidth, maxWidth);
   this.height = Math.min(clientHeight, maxHeight);
-  
-  this.screenTop = (clientHeight - this.height) / 2;
-  this.screenLeft = (clientWidth - this.width) / 2;
-  
-  this.top = -1;
-  this.right = 1;
-  this.bottom = 1;
-  this.left = -1;
-  
-  this.offsetX = this.width / (this.right - this.left);
-  this.offsetY = this.height / (this.bottom - this.top);
-  
-  this.scale = Math.min(this.offsetX, this.offsetY);
+  this.top = (clientHeight - this.height) / 2;
+  this.left = (clientWidth - this.width) / 2;
 };
 
-StealthGame.Screen.prototype.toMx = function(x) {
-  return (x - this.offsetX) / this.scale;
+StealthGame.Screen.prototype.clientToScreenX = function(x) {
+  return x - this.left;
 };
 
-StealthGame.Screen.prototype.toMy = function(y) {
-  return (this.offsetY - y) / this.scale;
+StealthGame.Screen.prototype.clientToScreenY = function(y) {
+  return y - this.top;
 };
 
 StealthGame.prototype.updateState = function() {};
@@ -66,9 +96,8 @@ StealthGame.prototype.drawFrame = function() {
   this.context_.clearRect(0, 0, this.screen_.width, this.screen_.height);
 
   this.context_.save();
-  this.context_.translate(this.screen_.width / 2, this.screen_.height / 2);
-  this.context_.scale(this.screen_.scale, -this.screen_.scale);
-  this.agent_.drawFrame(this.context_);
+  this.camera_.transform(this.context_);
+  this.agent_.draw(this.context_);
   this.context_.restore();
   
   window.requestAnimationFrame(this.boundDrawFrame_);
@@ -87,7 +116,7 @@ StealthGame.Agent.prototype.moveTo = function (x, y) {
   this.y = y;
 }
 
-StealthGame.Agent.prototype.drawFrame = function(context) {
+StealthGame.Agent.prototype.draw = function(context) {
   context.beginPath();
   context.arc(this.x, this.y, this.r, 0, 6.284);
   context.fillStyle = 'blue';
@@ -97,9 +126,9 @@ StealthGame.Agent.prototype.drawFrame = function(context) {
   context.stroke();
 };
 
-StealthGame.EventHandler = function(agent, screen) {
+StealthGame.EventHandler = function(agent, camera) {
   this.agent_ = agent;
-  this.screen_ = screen;
+  this.camera_ = camera;
   this.mouseDown_ = false;
   this.isAndroid_ = navigator.userAgent.indexOf("Android") >= 0;
 };
@@ -120,8 +149,8 @@ StealthGame.EventHandler.prototype.onmousedown = function(evt) {
 StealthGame.EventHandler.prototype.onmousemove = function(evt) {
   if (!this.mouseDown_) return;
   this.agent_.moveTo(
-      this.screen_.toMx(evt.offsetX),
-      this.screen_.toMy(evt.offsetY));
+      this.camera_.clientToWorldX(evt.clientX),
+      this.camera_.clientToWorldY(evt.clientY));
 };
 
 StealthGame.EventHandler.prototype.ontouchmove = function(evt) {
@@ -129,8 +158,10 @@ StealthGame.EventHandler.prototype.ontouchmove = function(evt) {
   
   var touch = evt.touches[evt.touches.length - 1];
   this.agent_.moveTo(
-      this.screen_.toMx(touch.screenX - this.screen_.screenLeft),
-      this.screen_.toMy(touch.screenY - this.screen_.screenTop));
+      this.camera_.screenToWorldX(
+        this.screen_.clientToScreenX(touch.screenX)),
+      this.camera_.screenToWorldY(
+        this.screen_.clientToScreenY(touch.screenY)));
 };
 
 StealthGame.EventHandler.prototype.ontouchstart = function(evt) {
