@@ -170,8 +170,23 @@ StealthGame.EventHandler.prototype.ontouchstart = function(evt) {
 
 
 if (this.wtf) {
-  StealthGame = wtf.trace.instrumentType(StealthGame, 'StealthGame', {
-    drawFrame: 'drawFrame',
-    updateState: 'updateState'
-  });
+  StealthGame = wtf.trace.instrumentType(
+    StealthGame,
+    'StealthGame',
+    { drawFrame: 'drawFrame',
+      updateState: 'updateState'
+    }
+  );
+  StealthGame.Camera = wtf.trace.instrumentType(
+    StealthGame.Camera,
+    'StealthGame.Camera',
+    { transform: 'transform'
+    }
+  );
+  StealthGame.Agent = wtf.trace.instrumentType(
+    StealthGame.Agent,
+    'StealthGame.Agent',
+    { draw: 'draw'
+    }
+  );
 }
