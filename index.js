@@ -14,7 +14,12 @@ StealthGame = function(canvas) {
   this.context_ = this.canvas_.getContext('2d');
   
   this.agent_ = new StealthGame.Agent(0, 0);
-  this.enemy_ = new StealthGame.Enemy([.5, .5, .5, -.5]);
+  
+  this.world_ = [
+    this.agent_,
+    new StealthGame.Enemy([.5, .5, .5, -.5]),
+    new StealthGame.Enemy([-.5, -.5, -.5, .5])
+  ];
   
   this.boundDrawFrame_ = this.drawFrame.bind(this);
   window.requestAnimationFrame(this.boundDrawFrame_);
@@ -94,8 +99,9 @@ StealthGame.prototype.updateState = function() {
   var t = new Date().getTime();
   var dt = t - this.t0_;
   this.t0_ = t;
-  this.agent_.update(dt);
-  this.enemy_.update(dt);
+  for (var i = 0; i < this.world_.length; i++) {
+    this.world_[i].update(dt);
+  }
 };
 
 
@@ -104,8 +110,9 @@ StealthGame.prototype.drawFrame = function() {
 
   this.context_.save();
   this.camera_.transform(this.context_);
-  this.agent_.draw(this.context_);
-  this.enemy_.draw(this.context_);
+  for (var i = 0; i < this.world_.length; i++) {
+    this.world_[i].draw(this.context_);
+  }
   this.context_.restore();
   
   window.requestAnimationFrame(this.boundDrawFrame_);
