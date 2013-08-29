@@ -149,7 +149,11 @@ StealthGame.Agent.prototype.update = function(dt) {
   var stepy = Math.sin(angle) * step;
   this.x_ += stepx;
   this.y_ += stepy;
-  if (Math.abs(stepx) > Math.abs(dx)) this.x2_ = this.y2_ = undefined;
+  if (Math.abs(stepx) > Math.abs(dx)) {
+    this.x_ = this.x2_;
+    this.y_ = this.y2_;
+    this.x2_ = this.y2_ = undefined;
+  }
 };
 
 StealthGame.EventHandler = function(agent, camera) {
