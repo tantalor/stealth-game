@@ -122,8 +122,8 @@ StealthGame.prototype.drawFrame = function() {
 StealthGame.Agent = function(x, y) {
   this.x_ = x;
   this.y_ = y;
-  this.x2_ = undefined;
-  this.y2_ = undefined;
+  this.x2_ = x;
+  this.y2_ = y;
   this.r_ = .05;
   this.speed_ = 0.001;
 };
@@ -134,8 +134,8 @@ StealthGame.Agent.prototype.moveTo = function (x, y) {
 };
 
 StealthGame.Agent.prototype.stop = function () {
-  this.x2_ = undefined;
-  this.y2_ = undefined;
+  this.x2_ = this.x_;
+  this.y2_ = this.y_;
 };
 
 
@@ -154,19 +154,9 @@ StealthGame.Agent.prototype.draw = function(context) {
 };
 
 StealthGame.Agent.prototype.update = function(dt) {
-  if (this.x2_ == undefined || this.y2_ == undefined) return;
-  var dx = this.x2_ - this.x_;
-  var dy = this.y2_ - this.y_;
-  var step = dt * this.speed_;
-  var angle = Math.atan2(dy, dx);
-  var stepx = Math.cos(angle) * step;
-  var stepy = Math.sin(angle) * step;
-  this.x_ += stepx;
-  this.y_ += stepy;
-  if (Math.abs(stepx) > Math.abs(dx) && Math.abs(stepy) > Math.abs(dy)) {
+  if ((this.x2_ !== this.x_ || this.y2_ != this.y_) && this.followStep(dt)) {
     this.x_ = this.x2_;
     this.y_ = this.y2_;
-    this.x2_ = this.y2_ = undefined;
   }
 };
 
@@ -177,6 +167,7 @@ StealthGame.Enemy = function(path) {
   this.x2_ = path[2];
   this.y2_ = path[3];
   this.r_ = .05;
+  this.a_ = Math.atan2(this.x);
   this.speed_ = 0.0005;
   this.nextIndex_ = 1;
 };
@@ -197,6 +188,14 @@ StealthGame.Enemy.prototype.draw = function(context) {
 };
 
 StealthGame.Enemy.prototype.update = function(dt) {
+  if (this.followStep(dt)) {
+    this.nextIndex_ = (this.nextIndex_ + 1) % (this.path_.length / 2);
+    this.x2_ = this.path_[this.nextIndex_ * 2];
+    this.y2_ = this.path_[this.nextIndex_ * 2 + 1];
+  }
+};
+
+StealthGame.followStep = function(dt) {
   var dx = this.x2_ - this.x_;
   var dy = this.y2_ - this.y_;
   var step = dt * this.speed_;
@@ -205,14 +204,17 @@ StealthGame.Enemy.prototype.update = function(dt) {
   var stepy = Math.sin(angle) * step;
   this.x_ += stepx;
   this.y_ += stepy;
+  
   if (Math.abs(stepx) > Math.abs(dx) && Math.abs(stepy) > Math.abs(dy)) {
-    this.x_ = this.x2_;
-    this.y_ = this.y2_;
-    this.nextIndex_ = (this.nextIndex_ + 1) % (this.path_.length / 2);
-    this.x2_ = this.path_[this.nextIndex_ * 2];
-    this.y2_ = this.path_[this.nextIndex_ * 2 + 1];
+    return true;
   }
+  
+  return false;
 };
+
+StealthGame.Agent.prototype.followStep = StealthGame.followStep;
+
+StealthGame.Enemy.prototype.followStep = StealthGame.followStep;
 
 StealthGame.EventHandler = function(agent, camera) {
   this.agent_ = agent;
