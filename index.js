@@ -140,13 +140,17 @@ StealthGame.Agent.prototype.stop = function () {
 
 
 StealthGame.Agent.prototype.draw = function(context) {
+  context.save();
+  context.translate(this.x_, this.y_);
+  context.scale(this.r_, this.r_);
   context.beginPath();
-  context.arc(this.x_, this.y_, this.r_, 0, 6.284);
+  context.arc(0, 0, 1, 0, 6.284);
   context.fillStyle = 'blue';
   context.fill();
-  context.lineWidth = this.r_ / 8;
+  context.lineWidth = .125;
   context.strokeStyle = 'black';
   context.stroke();
+  context.restore();
 };
 
 StealthGame.Agent.prototype.update = function(dt) {
@@ -179,13 +183,17 @@ StealthGame.Enemy = function(path) {
 
 
 StealthGame.Enemy.prototype.draw = function(context) {
+  context.save();
+  context.translate(this.x_, this.y_);
+  context.scale(this.r_, this.r_);
   context.beginPath();
-  context.arc(this.x_, this.y_, this.r_, 0, 6.284);
+  context.arc(0, 0, 1, 0, 6.284);
   context.fillStyle = 'red';
   context.fill();
-  context.lineWidth = this.r_ / 8;
+  context.lineWidth = .125;
   context.strokeStyle = 'black';
   context.stroke();
+  context.restore();
 };
 
 StealthGame.Enemy.prototype.update = function(dt) {
@@ -265,6 +273,13 @@ if (this.wtf) {
   StealthGame.Agent = wtf.trace.instrumentType(
     StealthGame.Agent,
     'StealthGame.Agent',
+    { draw: 'draw',
+      update: 'update'
+    }
+  );
+  StealthGame.Enemy = wtf.trace.instrumentType(
+    StealthGame.Enemy,
+    'StealthGame.Enemy',
     { draw: 'draw',
       update: 'update'
     }
