@@ -126,6 +126,7 @@ StealthGame.Agent = function(x, y) {
   this.y2_ = y;
   this.r_ = .05;
   this.speed_ = 0.001;
+  this.color_ = 'blue';
 };
 
 StealthGame.Agent.prototype.moveTo = function (x, y) {
@@ -139,19 +140,21 @@ StealthGame.Agent.prototype.stop = function () {
 };
 
 
-StealthGame.Agent.prototype.draw = function(context) {
+StealthGame.drawAsCircle = function(context) {
   context.save();
   context.translate(this.x_, this.y_);
   context.scale(this.r_, this.r_);
   context.beginPath();
   context.arc(0, 0, 1, 0, 6.284);
-  context.fillStyle = 'blue';
+  context.fillStyle = this.color_;
   context.fill();
   context.lineWidth = .125;
   context.strokeStyle = 'black';
   context.stroke();
   context.restore();
 };
+
+StealthGame.Agent.prototype.draw = StealthGame.drawAsCircle;
 
 StealthGame.Agent.prototype.update = function(dt) {
   if ((this.x2_ !== this.x_ || this.y2_ != this.y_) && this.followStep(dt)) {
@@ -170,22 +173,11 @@ StealthGame.Enemy = function(path) {
   this.a_ = Math.atan2(this.x);
   this.speed_ = 0.0005;
   this.nextIndex_ = 1;
+  this.color_ = 'red';
 };
 
 
-StealthGame.Enemy.prototype.draw = function(context) {
-  context.save();
-  context.translate(this.x_, this.y_);
-  context.scale(this.r_, this.r_);
-  context.beginPath();
-  context.arc(0, 0, 1, 0, 6.284);
-  context.fillStyle = 'red';
-  context.fill();
-  context.lineWidth = .125;
-  context.strokeStyle = 'black';
-  context.stroke();
-  context.restore();
-};
+StealthGame.Enemy.prototype.draw = StealthGame.drawAsCircle;
 
 StealthGame.Enemy.prototype.update = function(dt) {
   if (this.followStep(dt)) {
