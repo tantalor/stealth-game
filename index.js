@@ -14,6 +14,7 @@ StealthGame = function(canvas) {
   this.context_ = this.canvas_.getContext('2d');
   
   this.agent_ = new StealthGame.Agent(0, 0);
+  this.enemy_ = new StealthGame.Enemy([.5, .5, .5, -.5]);
   
   this.boundDrawFrame_ = this.drawFrame.bind(this);
   window.requestAnimationFrame(this.boundDrawFrame_);
@@ -94,6 +95,7 @@ StealthGame.prototype.updateState = function() {
   var dt = t - this.t0_;
   this.t0_ = t;
   this.agent_.update(dt);
+  this.enemy_.update(dt);
 };
 
 
@@ -103,6 +105,7 @@ StealthGame.prototype.drawFrame = function() {
   this.context_.save();
   this.camera_.transform(this.context_);
   this.agent_.draw(this.context_);
+  this.enemy_.draw(this.context_);
   this.context_.restore();
   
   window.requestAnimationFrame(this.boundDrawFrame_);
@@ -149,10 +152,50 @@ StealthGame.Agent.prototype.update = function(dt) {
   var stepy = Math.sin(angle) * step;
   this.x_ += stepx;
   this.y_ += stepy;
-  if (Math.abs(stepx) > Math.abs(dx)) {
+  if (Math.abs(stepx) > Math.abs(dx) && Math.abs(stepy) > Math.abs(dy)) {
     this.x_ = this.x2_;
     this.y_ = this.y2_;
     this.x2_ = this.y2_ = undefined;
+  }
+};
+
+StealthGame.Enemy = function(path) {
+  this.path_ = path;
+  this.x_ = path[0];
+  this.y_ = path[1];
+  this.x2_ = path[2];
+  this.y2_ = path[3];
+  this.r_ = .05;
+  this.speed_ = 0.0005;
+  this.nextIndex_ = 1;
+};
+
+
+StealthGame.Enemy.prototype.draw = function(context) {
+  context.beginPath();
+  context.arc(this.x_, this.y_, this.r_, 0, 6.284);
+  context.fillStyle = 'red';
+  context.fill();
+  context.lineWidth = this.r_ / 8;
+  context.strokeStyle = 'black';
+  context.stroke();
+};
+
+StealthGame.Enemy.prototype.update = function(dt) {
+  var dx = this.x2_ - this.x_;
+  var dy = this.y2_ - this.y_;
+  var step = dt * this.speed_;
+  var angle = Math.atan2(dy, dx);
+  var stepx = Math.cos(angle) * step;
+  var stepy = Math.sin(angle) * step;
+  this.x_ += stepx;
+  this.y_ += stepy;
+  if (Math.abs(stepx) > Math.abs(dx) && Math.abs(stepy) > Math.abs(dy)) {
+    this.x_ = this.x2_;
+    this.y_ = this.y2_;
+    this.nextIndex_ = (this.nextIndex_ + 1) % (this.path_.length / 2);
+    this.x2_ = this.path_[this.nextIndex_ * 2];
+    this.y2_ = this.path_[this.nextIndex_ * 2 + 1];
   }
 };
 
