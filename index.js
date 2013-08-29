@@ -89,7 +89,12 @@ StealthGame.Screen.prototype.clientToScreenY = function(y) {
   return y - this.top;
 };
 
-StealthGame.prototype.updateState = function() {};
+StealthGame.prototype.updateState = function() {
+  var t = new Date().getTime();
+  var dt = t - this.t0_;
+  this.t0_ = t;
+  this.agent_.update(dt);
+};
 
 
 StealthGame.prototype.drawFrame = function() {
@@ -105,25 +110,46 @@ StealthGame.prototype.drawFrame = function() {
 
 
 StealthGame.Agent = function(x, y) {
-  this.x = x;
-  this.y = y;
-  this.r = .05;
+  this.x_ = x;
+  this.y_ = y;
+  this.x2_ = undefined;
+  this.y2_ = undefined;
+  this.r_ = .05;
+  this.speed_ = 0.001;
+};
+
+StealthGame.Agent.prototype.moveTo = function (x, y) {
+  this.x2_ = x;
+  this.y2_ = y;
+};
+
+StealthGame.Agent.prototype.stop = function () {
+  this.x2_ = undefined;
+  this.y2_ = undefined;
 };
 
 
-StealthGame.Agent.prototype.moveTo = function (x, y) {
-  this.x = x;
-  this.y = y;
-}
-
 StealthGame.Agent.prototype.draw = function(context) {
   context.beginPath();
-  context.arc(this.x, this.y, this.r, 0, 6.284);
+  context.arc(this.x_, this.y_, this.r_, 0, 6.284);
   context.fillStyle = 'blue';
   context.fill();
-  context.lineWidth = this.r / 8;
+  context.lineWidth = this.r_ / 8;
   context.strokeStyle = 'black';
   context.stroke();
+};
+
+StealthGame.Agent.prototype.update = function(dt) {
+  if (this.x2_ == undefined || this.y2_ == undefined) return;
+  var dx = this.x2_ - this.x_;
+  var dy = this.y2_ - this.y_;
+  var step = dt * this.speed_;
+  var angle = Math.atan2(dy, dx);
+  var stepx = Math.cos(angle) * step;
+  var stepy = Math.sin(angle) * step;
+  this.x_ += stepx;
+  this.y_ += stepy;
+  if (Math.abs(stepx) > Math.abs(dx)) this.x2_ = this.y2_ = undefined;
 };
 
 StealthGame.EventHandler = function(agent, camera) {
@@ -139,6 +165,7 @@ StealthGame.EventHandler.prototype.getHandler = function(name) {
 
 StealthGame.EventHandler.prototype.onmouseup = function(evt) {
   this.mouseDown_ = false;
+  this.agent_.stop();
 };
 
 StealthGame.EventHandler.prototype.onmousedown = function(evt) {
@@ -184,7 +211,8 @@ if (this.wtf) {
   StealthGame.Agent = wtf.trace.instrumentType(
     StealthGame.Agent,
     'StealthGame.Agent',
-    { draw: 'draw'
+    { draw: 'draw',
+      update: 'update'
     }
   );
 }
