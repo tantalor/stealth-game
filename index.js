@@ -177,9 +177,13 @@ StealthGame.Enemy = function(path) {
   this.speeda_ = this.speed_ * 5;
   this.nextIndex_ = 1;
   this.color_ = 'red';
-  this.turning_ = false;
+  this.state_ = StealthGame.Enemy.State.MOVING;
 };
 
+StealthGame.Enemy.State = {
+  TURNING: 0,
+  MOVING: 1,
+};
 
 StealthGame.Enemy.prototype.draw = StealthGame.drawAsCircle;
 
@@ -196,20 +200,20 @@ StealthGame.Enemy.prototype.drawFirst = function(context) {
 };
 
 StealthGame.Enemy.prototype.update = function(dt) {
-  if (this.turning_) {
+  if (this.state_ == StealthGame.Enemy.State.TURNING) {
     var da = this.a2_ - this.a_;
     var stepa = (da > 0 ? 1 : -1) * dt * this.speeda_;
     this.a_ += stepa;
     if (Math.abs(stepa) > Math.abs(da)) {
       this.a_ = this.a2_;
-      this.turning_ = false;
+      this.state_ = StealthGame.Enemy.State.MOVING;
     }    
   } else if (this.followStep(dt)) {
     this.nextIndex_ = (this.nextIndex_ + 1) % (this.path_.length / 2);
     this.x2_ = this.path_[this.nextIndex_ * 2];
     this.y2_ = this.path_[this.nextIndex_ * 2 + 1];
     this.a2_ = Math.atan2(this.y2_ - this.y_, this.x2_ - this.x_);
-    this.turning_ = true;
+    this.state_ = StealthGame.Enemy.State.TURNING;
   }
 };
 
