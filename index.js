@@ -17,8 +17,8 @@ StealthGame = function(canvas) {
   
   this.world_ = [
     this.agent_,
-    new StealthGame.Enemy([.5, .5, .5, -.5]),
-    new StealthGame.Enemy([-.5, -.5, -.5, .5])
+    new StealthGame.Enemy([.5, .5, .5, -.5, .25, 0]),
+    new StealthGame.Enemy([-.5, -.5, -.5, .5, -.25, 0])
   ];
   
   this.boundDrawFrame_ = this.drawFrame.bind(this);
@@ -212,7 +212,17 @@ StealthGame.Enemy.prototype.update = function(dt) {
     this.nextIndex_ = (this.nextIndex_ + 1) % (this.path_.length / 2);
     this.x2_ = this.path_[this.nextIndex_ * 2];
     this.y2_ = this.path_[this.nextIndex_ * 2 + 1];
-    this.a2_ = Math.atan2(this.y2_ - this.y_, this.x2_ - this.x_);
+    
+    // Don't turn more than 180 degrees.
+    var a2 = Math.atan2(this.y2_ - this.y_, this.x2_ - this.x_);
+    var da = (a2 - this.a_) % (2 * Math.PI);
+    if (da > Math.PI) {
+      da -= 2 * Math.PI;
+    } else if (da < -Math.PI) {
+      da += 2 * Math.PI;
+    }
+    this.a2_ = this.a_ + da;
+
     this.state_ = StealthGame.Enemy.State.TURNING;
   }
 };
