@@ -33,8 +33,32 @@ TestScreen.prototype.testLargeScreen = function() {
 };
 
 
+function TestCamera() {};
+
+TestCamera.prototype.testWideScreenCamera = function() {
+  var screen = new StealthGame.Screen(100, 10);
+  var camera = new StealthGame.Camera(screen);
+  assert.equal(camera.screenToWorldY(0), 1, 'Screen top to world.');
+  assert.equal(camera.screenToWorldX(100), 10, 'Screen right to world.');
+  assert.equal(camera.screenToWorldY(10), -1, 'Screen bottom to world.');
+  assert.equal(camera.screenToWorldX(0), -10, 'Screen left to world.');
+};
+
+
+TestCamera.prototype.testTallScreenCamera = function() {
+  var screen = new StealthGame.Screen(10, 100);
+  var camera = new StealthGame.Camera(screen);
+  
+  // assert.equal(camera.screenToWorldY(0), 10, 'Screen top to world.');
+  assert.equal(camera.screenToWorldX(10), 1, 'Screen right to world.');
+  // assert.equal(camera.screenToWorldY(100), -10, 'Screen bottom to world.');
+  assert.equal(camera.screenToWorldX(0), -1, 'Screen left to world.');
+};
+
+
 runTests(TestModule);
 runTests(TestScreen);
+runTests(TestCamera);
 
 function runTests(ctor) {
   for (var key in ctor.prototype) {

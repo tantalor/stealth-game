@@ -101,8 +101,8 @@ StealthGame.Util.followStep = function(dt) {
 
 StealthGame.Camera = function(screen) {
   var widthToHeight = screen.width / screen.height;
-  var widthScale = widthToHeight < 0 ? 1 : widthToHeight;
-  var heightScale = widthToHeight > 0 ? 1 : 1 / widthToHeight;
+  var widthScale = widthToHeight < 1 ? 1 : widthToHeight;
+  var heightScale = widthToHeight > 1 ? 1 : 1 / widthToHeight;
   
   // World coordinates.
   this.width_ = 2 * widthScale;
