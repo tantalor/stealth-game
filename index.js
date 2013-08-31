@@ -38,6 +38,65 @@ StealthGame = function(canvas) {
   }
 };
 
+StealthGame.prototype.updateState = function() {
+  var t = new Date().getTime();
+  var dt = t - this.t0_;
+  this.t0_ = t;
+  for (var i = 0; i < this.world_.length; i++) {
+    this.world_[i].update(dt);
+  }
+};
+
+
+StealthGame.prototype.drawFrame = function() {
+  this.context_.clearRect(0, 0, this.screen_.width, this.screen_.height);
+
+  this.context_.save();
+  this.camera_.transform(this.context_);
+  for (var i = 0; i < this.world_.length; i++) {
+    this.world_[i].draw(this.context_);
+  }
+  this.context_.restore();
+  
+  window.requestAnimationFrame(this.boundDrawFrame_);
+};
+
+
+StealthGame.Util = {};
+
+StealthGame.Util.drawAsCircle = function(context) {
+  context.save();
+  context.translate(this.x_, this.y_);
+  context.scale(this.r_, this.r_);
+  context.lineWidth = .125;
+  context.strokeStyle = 'black';
+  context.fillStyle = this.color_;
+  this.drawFirst && this.drawFirst(context);
+  context.beginPath();
+  context.arc(0, 0, 1, 0, 6.284);
+  context.fill();
+  context.stroke();
+  context.restore();
+};
+
+StealthGame.Util.followStep = function(dt) {
+  var dx = this.x2_ - this.x_;
+  var dy = this.y2_ - this.y_;
+  var step = dt * this.speed_;
+  var angle = Math.atan2(dy, dx);
+  var stepx = Math.cos(angle) * step;
+  var stepy = Math.sin(angle) * step;
+  this.x_ += stepx;
+  this.y_ += stepy;
+  
+  if (Math.abs(stepx) > Math.abs(dx) && Math.abs(stepy) > Math.abs(dy)) {
+    return true;
+  }
+  
+  return false;
+};
+
+
 StealthGame.Camera = function(screen) {
   var widthToHeight = screen.width / screen.height;
   var widthScale = widthToHeight < 0 ? 1 : widthToHeight;
@@ -76,6 +135,7 @@ StealthGame.Camera.prototype.transform = function(context) {
   context.translate(-this.x_, -this.y_);
 };
 
+
 StealthGame.Screen = function(clientWidth, clientHeight) {
   var maxWidth = 1024;
   var maxHeight = maxWidth * 3 / 4;
@@ -93,29 +153,6 @@ StealthGame.Screen.prototype.clientToScreenX = function(x) {
 
 StealthGame.Screen.prototype.clientToScreenY = function(y) {
   return y - this.top;
-};
-
-StealthGame.prototype.updateState = function() {
-  var t = new Date().getTime();
-  var dt = t - this.t0_;
-  this.t0_ = t;
-  for (var i = 0; i < this.world_.length; i++) {
-    this.world_[i].update(dt);
-  }
-};
-
-
-StealthGame.prototype.drawFrame = function() {
-  this.context_.clearRect(0, 0, this.screen_.width, this.screen_.height);
-
-  this.context_.save();
-  this.camera_.transform(this.context_);
-  for (var i = 0; i < this.world_.length; i++) {
-    this.world_[i].draw(this.context_);
-  }
-  this.context_.restore();
-  
-  window.requestAnimationFrame(this.boundDrawFrame_);
 };
 
 
@@ -139,30 +176,17 @@ StealthGame.Agent.prototype.stop = function () {
   this.y2_ = this.y_;
 };
 
-
-StealthGame.drawAsCircle = function(context) {
-  context.save();
-  context.translate(this.x_, this.y_);
-  context.scale(this.r_, this.r_);
-  context.lineWidth = .125;
-  context.strokeStyle = 'black';
-  context.fillStyle = this.color_;
-  this.drawFirst && this.drawFirst(context);
-  context.beginPath();
-  context.arc(0, 0, 1, 0, 6.284);
-  context.fill();
-  context.stroke();
-  context.restore();
-};
-
-StealthGame.Agent.prototype.draw = StealthGame.drawAsCircle;
-
 StealthGame.Agent.prototype.update = function(dt) {
   if ((this.x2_ !== this.x_ || this.y2_ != this.y_) && this.followStep(dt)) {
     this.x_ = this.x2_;
     this.y_ = this.y2_;
   }
 };
+
+StealthGame.Agent.prototype.followStep = StealthGame.Util.followStep;
+
+StealthGame.Agent.prototype.draw = StealthGame.Util.drawAsCircle;
+
 
 StealthGame.Enemy = function(path) {
   this.path_ = path;
@@ -185,7 +209,7 @@ StealthGame.Enemy.State = {
   MOVING: 1,
 };
 
-StealthGame.Enemy.prototype.draw = StealthGame.drawAsCircle;
+StealthGame.Enemy.prototype.draw = StealthGame.Util.drawAsCircle;
 
 StealthGame.Enemy.prototype.drawFirst = function(context) {
   context.rotate(this.a_);
@@ -227,26 +251,8 @@ StealthGame.Enemy.prototype.update = function(dt) {
   }
 };
 
-StealthGame.followStep = function(dt) {
-  var dx = this.x2_ - this.x_;
-  var dy = this.y2_ - this.y_;
-  var step = dt * this.speed_;
-  var angle = Math.atan2(dy, dx);
-  var stepx = Math.cos(angle) * step;
-  var stepy = Math.sin(angle) * step;
-  this.x_ += stepx;
-  this.y_ += stepy;
-  
-  if (Math.abs(stepx) > Math.abs(dx) && Math.abs(stepy) > Math.abs(dy)) {
-    return true;
-  }
-  
-  return false;
-};
+StealthGame.Enemy.prototype.followStep = StealthGame.Util.followStep;
 
-StealthGame.Agent.prototype.followStep = StealthGame.followStep;
-
-StealthGame.Enemy.prototype.followStep = StealthGame.followStep;
 
 StealthGame.EventHandler = function(agent, camera) {
   this.agent_ = agent;
