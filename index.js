@@ -1,4 +1,6 @@
-StealthGame = function(canvas) {
+StealthGame = {};
+
+StealthGame.Game = function(canvas) {
   this.screen_ = new StealthGame.Screen(
       document.documentElement.clientWidth,
       document.documentElement.clientHeight);
@@ -38,7 +40,7 @@ StealthGame = function(canvas) {
   }
 };
 
-StealthGame.prototype.updateState = function() {
+StealthGame.Game.prototype.updateState = function() {
   var t = new Date().getTime();
   var dt = t - this.t0_;
   this.t0_ = t;
@@ -48,7 +50,7 @@ StealthGame.prototype.updateState = function() {
 };
 
 
-StealthGame.prototype.drawFrame = function() {
+StealthGame.Game.prototype.drawFrame = function() {
   this.context_.clearRect(0, 0, this.screen_.width, this.screen_.height);
 
   this.context_.save();
