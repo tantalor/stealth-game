@@ -1,4 +1,4 @@
-StealthGame = {};
+StealthGame = typeof exports !== 'undefined' ? exports : {};
 
 StealthGame.Game = function(canvas) {
   this.screen_ = new StealthGame.Screen(
