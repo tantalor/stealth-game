@@ -7,9 +7,9 @@ assert = require('assert');
 function TestModule() {};
 
 TestModule.prototype.testModule = function() {
-  assert(typeof StealthGame !== 'undefined',
+  assert.notEqual(typeof StealthGame, 'undefined',
       'StealthGame module is undefined.');
-  assert(typeof StealthGame.Game === 'function',
+  assert.equal(typeof StealthGame.Game, 'function',
       'StealthGame.Game method is missing.');
 };
 
