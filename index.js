@@ -203,12 +203,13 @@ StealthGame.Enemy = function(path) {
   this.speeda_ = this.speed_ * 5;
   this.nextIndex_ = 1;
   this.color_ = 'red';
-  this.state_ = StealthGame.Enemy.State.MOVING;
+  this.state_ = StealthGame.Enemy.State.STANDING;
 };
 
 StealthGame.Enemy.State = {
   TURNING: 0,
   MOVING: 1,
+  STANDING: 2
 };
 
 StealthGame.Enemy.prototype.draw = StealthGame.Util.drawAsCircle;
@@ -234,7 +235,8 @@ StealthGame.Enemy.prototype.update = function(dt) {
       this.a_ = this.a2_;
       this.state_ = StealthGame.Enemy.State.MOVING;
     }    
-  } else if (this.followStep(dt)) {
+  } else if (this.state_ == StealthGame.Enemy.State.MOVING) {
+    if (!this.followStep(dt)) return;
     this.nextIndex_ = (this.nextIndex_ + 1) % (this.path_.length / 2);
     this.x2_ = this.path_[this.nextIndex_ * 2];
     this.y2_ = this.path_[this.nextIndex_ * 2 + 1];
