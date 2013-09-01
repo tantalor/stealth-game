@@ -32,6 +32,12 @@ TestScreen.prototype.testLargeScreen = function() {
   assert.equal(screen.left, 4488, 'Screen left.');
 };
 
+TestScreen.prototype.testClientToScreen = function() {
+  var screen = new StealthGame.Screen(10000, 10000);
+  assert.equal(screen.clientToScreenX(4488), 0, 'Client to screen x.')
+  assert.equal(screen.clientToScreenY(4616), 0, 'Client to screen y.')
+};
+
 
 function TestCamera() {};
 
