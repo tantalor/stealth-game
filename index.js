@@ -203,7 +203,8 @@ StealthGame.Enemy = function(path) {
   this.speeda_ = this.speed_ * 5;
   this.nextIndex_ = 1;
   this.color_ = 'red';
-  this.state_ = StealthGame.Enemy.State.STANDING;
+  this.state_ = StealthGame.Enemy.State.MOVING;
+  this.standingTime_ = -1;
 };
 
 StealthGame.Enemy.State = {
@@ -251,7 +252,13 @@ StealthGame.Enemy.prototype.update = function(dt) {
     }
     this.a2_ = this.a_ + da;
 
-    this.state_ = StealthGame.Enemy.State.TURNING;
+    this.state_ = StealthGame.Enemy.State.STANDING;
+    this.standingTime_ = Math.random() * 500 + 500;
+  } else if (this.state_ == StealthGame.Enemy.State.STANDING) {
+    this.standingTime_ -= dt;
+    if (this.standingTime_ < 0) {
+      this.state_ = StealthGame.Enemy.State.TURNING;
+    }
   }
 };
 
