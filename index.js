@@ -38,12 +38,17 @@ StealthGame.Game = function(canvas) {
     this.canvas_.addEventListener(events[i],
         this.eventHandler_.getHandler(events[i]));
   }
+  
+  var global = window;
+  global.addEventListener('keydown', this.eventHandler_.getHandler('keydown'));
+  global.addEventListener('keyup', this.eventHandler_.getHandler('keyup'));
 };
 
 StealthGame.Game.prototype.updateState = function() {
   var t = new Date().getTime();
   var dt = t - this.t0_;
   this.t0_ = t;
+  this.camera_.update(dt);
   for (var i = 0; i < this.world_.length; i++) {
     this.world_[i].update(dt);
   }
@@ -110,6 +115,9 @@ StealthGame.Camera = function(screen) {
   this.x_ = -this.width_ / 2;
   this.y_ = -this.height_ / 2;
   
+  // Rate of zoom.
+  this.dz_ = 0;
+  
   this.screen_ = screen;
 }
 
@@ -135,6 +143,23 @@ StealthGame.Camera.prototype.transform = function(context) {
   context.translate(0, this.screen_.height);
   context.scale(scaleX, -scaleY);
   context.translate(-this.x_, -this.y_);
+};
+
+StealthGame.Camera.prototype.update = function(dt) {
+  if (this.dz_) {
+    var width = this.width_ * this.dz_;
+    var height = this.height_ * this.dz_;
+    var cx = this.width_ / 2+ this.x_;
+    var cy = this.height_ / 2 + this.y_;
+    this.width_ = width;
+    this.height_ = height;
+    this.x_ = cx - width / 2;
+    this.y_ = cy - height / 2;
+  }
+};
+
+StealthGame.Camera.prototype.setZoomRate = function(dz) {
+  this.dz_ = dz;
 };
 
 
@@ -304,6 +329,19 @@ StealthGame.EventHandler.prototype.ontouchmove = function(evt) {
 
 StealthGame.EventHandler.prototype.ontouchstart = function(evt) {
   this.ontouchmove(evt);
+};
+
+StealthGame.EventHandler.prototype.onkeydown = function(evt) {
+  var c = String.fromCharCode(evt.keyCode);
+  if (c == 'W') {
+    this.camera_.setZoomRate(.99);
+  } else if (c == 'S') {
+    this.camera_.setZoomRate(1 / .99);
+  }
+};
+
+StealthGame.EventHandler.prototype.onkeyup = function(evt) {
+  this.camera_.setZoomRate(0);
 };
 
 
