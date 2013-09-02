@@ -115,14 +115,15 @@ StealthGame.Util.followStep = function(dt) {
 
 StealthGame.Camera = function(screen) {
   var widthToHeight = screen.width / screen.height;
-  var widthScale = widthToHeight < 1 ? 1 : widthToHeight;
-  var heightScale = widthToHeight > 1 ? 1 : 1 / widthToHeight;
   
-  // World coordinates.
-  this.width_ = 2 * widthScale;
-  this.height_ = 2 * heightScale;
+  this.width_ = widthToHeight < 1 ? 2 : 2 * widthToHeight;
+  this.height_ = widthToHeight > 1 ? 2 : 2 / widthToHeight;
+  
   this.x_ = -this.width_ / 2;
   this.y_ = -this.height_ / 2;
+  
+  this.scaleX_ = screen.width / this.width_;
+  this.scaleY_ = screen.height / this.height_;
   
   // Rate of zoom.
   this.dz_ = 0;
@@ -131,11 +132,11 @@ StealthGame.Camera = function(screen) {
 }
 
 StealthGame.Camera.prototype.screenToWorldX = function(x) {
-  return (x / this.screen_.width) * this.width_ + this.x_;
+  return (x / this.scaleX_) + this.x_;
 };
 
 StealthGame.Camera.prototype.screenToWorldY = function(y) {
-  return (1 - y / this.screen_.height) * this.height_ + this.y_;
+  return (this.screen_.height - y) / this.scaleY_ + this.y_;
 };
 
 StealthGame.Camera.prototype.clientToWorldX = function(x) {
@@ -147,10 +148,8 @@ StealthGame.Camera.prototype.clientToWorldY = function(y) {
 };
 
 StealthGame.Camera.prototype.transform = function(context) {
-  var scaleX = this.screen_.width / this.width_;
-  var scaleY = this.screen_.height / this.height_;
   context.translate(0, this.screen_.height);
-  context.scale(scaleX, -scaleY);
+  context.scale(this.scaleX_, -this.scaleY_);
   context.translate(-this.x_, -this.y_);
 };
 
@@ -161,7 +160,9 @@ StealthGame.Camera.prototype.update = function(dt) {
     var cx = this.width_ / 2+ this.x_;
     var cy = this.height_ / 2 + this.y_;
     this.width_ = width;
-    this.height_ = height;
+    this.height_ = height;  
+    this.scaleX_ = this.screen_.width / this.width_;
+    this.scaleY_ = this.screen_.height / this.height_;
     this.x_ = cx - width / 2;
     this.y_ = cy - height / 2;
   }
