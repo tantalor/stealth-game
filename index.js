@@ -125,8 +125,9 @@ StealthGame.Camera = function(screen) {
   this.scaleX_ = screen.width / this.width_;
   this.scaleY_ = screen.height / this.height_;
   
-  // Rate of zoom.
   this.dz_ = 0;
+  this.dy_ = 0;
+  this.dx_ = 0;
   
   this.screen_ = screen;
 }
@@ -155,9 +156,10 @@ StealthGame.Camera.prototype.transform = function(context) {
 
 StealthGame.Camera.prototype.update = function(dt) {
   if (this.dz_) {
-    var width = this.width_ * this.dz_;
-    var height = this.height_ * this.dz_;
-    var cx = this.width_ / 2+ this.x_;
+    var dz = Math.pow(this.dz_, dt);
+    var width = this.width_ * dz;
+    var height = this.height_ * dz;
+    var cx = this.width_ / 2 + this.x_;
     var cy = this.height_ / 2 + this.y_;
     this.width_ = width;
     this.height_ = height;  
@@ -166,10 +168,26 @@ StealthGame.Camera.prototype.update = function(dt) {
     this.x_ = cx - width / 2;
     this.y_ = cy - height / 2;
   }
+  
+  if (this.dy_) {
+    this.y_ += this.dy_ * dt;
+  }
+  
+  if (this.dx_) {
+    this.x_ += this.dx_ * dt;
+  }
 };
 
 StealthGame.Camera.prototype.setZoomRate = function(dz) {
   this.dz_ = dz;
+};
+
+StealthGame.Camera.prototype.setSpeedY = function(dy) {
+  this.dy_ = dy;
+};
+
+StealthGame.Camera.prototype.setSpeedX = function(dx) {
+  this.dx_ = dx;
 };
 
 
@@ -336,15 +354,30 @@ StealthGame.EventHandler.prototype.ontouchstart = function(evt) {
 
 StealthGame.EventHandler.prototype.onkeydown = function(evt) {
   var c = String.fromCharCode(evt.keyCode);
-  if (c == 'W') {
-    this.camera_.setZoomRate(.99);
+  if (c == 'R') {
+    this.camera_.setZoomRate(.999);
+  } else if (c == 'F') {
+    this.camera_.setZoomRate(1 / .999);
+  } else if (c == 'W') {
+    this.camera_.setSpeedY(.001);
   } else if (c == 'S') {
-    this.camera_.setZoomRate(1 / .99);
+    this.camera_.setSpeedY(-.001);
+  } else if (c == 'D') {
+    this.camera_.setSpeedX(.001);
+  } else if (c == 'A') {
+    this.camera_.setSpeedX(-.001);
   }
 };
 
 StealthGame.EventHandler.prototype.onkeyup = function(evt) {
-  this.camera_.setZoomRate(0);
+  var c = String.fromCharCode(evt.keyCode);
+  if (c == 'R' || c == 'F') {
+    this.camera_.setZoomRate(0);
+  } else if (c == 'W' || c == 'S') {
+    this.camera_.setSpeedY(0);
+  } else if (c == 'A' || c == 'D') {
+    this.camera_.setSpeedX(0);
+  }
 };
 
 
