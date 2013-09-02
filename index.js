@@ -86,7 +86,12 @@ StealthGame.Util.drawAsCircle = function(context) {
   context.restore();
 };
 
+/**
+ * @return {boolean} True if there are more steps to take.
+ */
 StealthGame.Util.followStep = function(dt) {
+  if (this.x2_ === this.x_ && this.y2_ === this.y_) return false;
+  
   var dx = this.x2_ - this.x_;
   var dy = this.y2_ - this.y_;
   var step = dt * this.speed_;
@@ -96,11 +101,15 @@ StealthGame.Util.followStep = function(dt) {
   this.x_ += stepx;
   this.y_ += stepy;
   
-  if (Math.abs(stepx) > Math.abs(dx) && Math.abs(stepy) > Math.abs(dy)) {
-    return true;
+  if (Math.abs(stepx) > Math.abs(dx)) {
+    this.x_ = this.x2_;
   }
   
-  return false;
+  if (Math.abs(stepy) > Math.abs(dy)) {
+    this.y_ = this.y2_;
+  }
+  
+  return true;
 };
 
 
@@ -203,14 +212,7 @@ StealthGame.Agent.prototype.stop = function () {
   this.y2_ = this.y_;
 };
 
-StealthGame.Agent.prototype.update = function(dt) {
-  if ((this.x2_ !== this.x_ || this.y2_ != this.y_) && this.followStep(dt)) {
-    this.x_ = this.x2_;
-    this.y_ = this.y2_;
-  }
-};
-
-StealthGame.Agent.prototype.followStep = StealthGame.Util.followStep;
+StealthGame.Agent.prototype.update = StealthGame.Util.followStep;
 
 StealthGame.Agent.prototype.draw = StealthGame.Util.drawAsCircle;
 
@@ -262,7 +264,7 @@ StealthGame.Enemy.prototype.update = function(dt) {
       this.state_ = StealthGame.Enemy.State.MOVING;
     }    
   } else if (this.state_ == StealthGame.Enemy.State.MOVING) {
-    if (!this.followStep(dt)) return;
+    if (this.followStep(dt)) return;
     this.nextIndex_ = (this.nextIndex_ + 1) % (this.path_.length / 2);
     this.x2_ = this.path_[this.nextIndex_ * 2];
     this.y2_ = this.path_[this.nextIndex_ * 2 + 1];
