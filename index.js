@@ -61,7 +61,11 @@ StealthGame.Game.prototype.drawFrame = function() {
   this.context_.save();
   this.camera_.transform(this.context_);
   for (var i = 0; i < this.world_.length; i++) {
-    this.world_[i].draw(this.context_);
+    var obj = this.world_[i];
+    this.context_.save();
+    obj.transform(this.context_);
+    obj.draw(this.context_);
+    this.context_.restore();
   }
   this.context_.restore();
   
@@ -72,18 +76,13 @@ StealthGame.Game.prototype.drawFrame = function() {
 StealthGame.Util = {};
 
 StealthGame.Util.drawAsCircle = function(context) {
-  context.save();
-  context.translate(this.x_, this.y_);
-  context.scale(this.r_, this.r_);
   context.lineWidth = .125;
   context.strokeStyle = 'black';
   context.fillStyle = this.color_;
-  this.drawFirst && this.drawFirst(context);
   context.beginPath();
   context.arc(0, 0, 1, 0, 6.284);
   context.fill();
   context.stroke();
-  context.restore();
 };
 
 /**
@@ -244,6 +243,12 @@ StealthGame.Agent.prototype.stop = function () {
 
 StealthGame.Agent.prototype.update = StealthGame.Util.followStep;
 
+StealthGame.Agent.prototype.transform = function(context) {
+  context.translate(this.x_, this.y_);
+  context.scale(this.r_, this.r_);
+};
+
+
 StealthGame.Agent.prototype.draw = StealthGame.Util.drawAsCircle;
 
 
@@ -270,18 +275,26 @@ StealthGame.Enemy.State = {
   STANDING: 2
 };
 
-StealthGame.Enemy.prototype.draw = StealthGame.Util.drawAsCircle;
-
-StealthGame.Enemy.prototype.drawFirst = function(context) {
+StealthGame.Enemy.prototype.transform = function(context) {
+  context.translate(this.x_, this.y_);
+  context.scale(this.r_, this.r_);
   context.rotate(this.a_);
+};
+
+StealthGame.Enemy.prototype.draw = function(context) {
   context.beginPath();
   context.moveTo(5, 1);
   context.lineTo(0, 0);
   context.lineTo(5, -1);
   context.globalAlpha = 0.25;
+  context.fillStyle = this.color_;
+  context.strokeStyle = 'black';
+  context.lineWidth = .125;
   context.fill();
   context.stroke();
   context.globalAlpha = 1;
+  
+  StealthGame.Util.drawAsCircle.call(this, context);
 };
 
 StealthGame.Enemy.prototype.update = function(dt) {
